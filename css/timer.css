@@ -1,0 +1,214 @@
+.card {
+  width: min(98vw, 1200px);
+  background: var(--panel);
+  border: 1px solid #334155;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+}
+
+.sub {
+  margin: 0 0 18px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.time {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.controls {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+
+.game-total {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 10px 14px;
+  min-width: 180px;
+  text-align: right;
+}
+
+.game-total-label {
+  display: block;
+  color: var(--muted);
+  font-size: 0.75rem;
+  margin-bottom: 2px;
+}
+
+.game-total-time {
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(1.5rem, 3.5vw, 2.2rem);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1;
+}
+
+#toggleBtn {
+  background: var(--accent);
+}
+
+#resetBtn {
+  background: var(--accent-2);
+  color: #03140a;
+}
+
+#nextPhaseBtn {
+  background: var(--accent-3);
+  color: #1a1200;
+}
+
+#endGameBtn {
+  background: #ef4444;
+  color: #2b0000;
+}
+
+.turns {
+  display: grid;
+  gap: 10px;
+}
+
+.turn-panel {
+  border: 1px solid #334155;
+  border-radius: 12px;
+  background: #0f172a;
+  overflow: hidden;
+}
+
+.turn-panel.active-turn {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.35) inset;
+}
+
+.turn-panel > summary {
+  list-style: none;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  cursor: pointer;
+  background: rgba(15, 23, 42, 0.9);
+}
+
+.turn-panel > summary::-webkit-details-marker {
+  display: none;
+}
+
+.turn-title {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.phase-list {
+  padding: 4px 10px 10px;
+  display: grid;
+  gap: 6px;
+}
+
+.phase-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  align-items: center;
+}
+
+.phase-row.current {
+  border-color: var(--accent-3);
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.phase-name {
+  font-size: 0.9rem;
+}
+
+.hint {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  text-align: center;
+}
+
+.report {
+  margin-top: 16px;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  background: #0f172a;
+  padding: 14px;
+}
+
+.report[hidden] {
+  display: none;
+}
+
+.report h2 {
+  margin: 0 0 10px;
+  font-size: 1rem;
+  color: var(--muted);
+}
+
+.report-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.report-card {
+  border: 1px solid #334155;
+  border-radius: 10px;
+  padding: 10px;
+  background: rgba(15, 23, 42, 0.8);
+}
+
+.report-phase-card {
+  margin-top: 12px;
+}
+
+.report-label {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-bottom: 4px;
+  display: block;
+}
+
+.report-value {
+  font-size: 1.05rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.phase-avg-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+}
+
+.phase-avg-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: center;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 7px 9px;
+}
