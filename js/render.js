@@ -1,4 +1,4 @@
-import { MAX_TURNS, PHASES } from './config.js';
+import { MAX_TURNS, PHASES, PHASE_LIMITS_MS, TURN_LIMIT_MS } from './config.js';
 import { dom } from './dom.js';
 import {
   state,
@@ -7,6 +7,19 @@ import {
   getGameTotalMs,
   getPlayedTurnIndexes
 } from './state.js';
+
+function formatLimitText(ms) {
+  const totalSeconds = Math.round(ms / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+
+  const minutePart = minutes > 0 ? `${minutes} minute${minutes === 1 ? '' : 's'}` : '';
+  const secondPart = seconds > 0 ? `${seconds} second${seconds === 1 ? '' : 's'}` : '';
+
+  if (minutePart && secondPart) return `${minutePart} ${secondPart}`;
+  if (minutePart) return minutePart;
+  return secondPart || '0 seconds';
+}
 
 export function renderTurns(onOldTurnToggle) {
   dom.turnsContainerEl.innerHTML = '';
@@ -29,9 +42,16 @@ export function renderTurns(onOldTurnToggle) {
       onOldTurnToggle(t);
     });
 
+    const summaryMain = document.createElement('div');
+    summaryMain.className = 'turn-summary-main';
+
     const title = document.createElement('span');
     title.className = 'turn-title';
     title.textContent = `Turn ${t + 1}`;
+
+    const turnGoal = document.createElement('span');
+    turnGoal.className = 'turn-goal';
+    turnGoal.textContent = `Average Time Goal: ${formatLimitText(TURN_LIMIT_MS)}`;
 
     const total = document.createElement('span');
     total.className = 'time';
@@ -41,9 +61,13 @@ export function renderTurns(onOldTurnToggle) {
       totalMs += performance.now() - state.startTime;
     }
     total.textContent = formatTime(totalMs);
+    total.classList.toggle('over-limit', totalMs >= TURN_LIMIT_MS);
 
-    summary.appendChild(title);
-    summary.appendChild(total);
+    summaryMain.appendChild(title);
+    summaryMain.appendChild(turnGoal);
+    summaryMain.appendChild(total);
+
+    summary.appendChild(summaryMain);
     details.appendChild(summary);
 
     const phaseList = document.createElement('div');
@@ -57,9 +81,13 @@ export function renderTurns(onOldTurnToggle) {
         row.classList.add('current');
       }
 
-      const name = document.createElement('span');
-      name.className = 'phase-name';
-      name.textContent = PHASES[p];
+      const phaseName = document.createElement('span');
+      phaseName.className = 'phase-name';
+      phaseName.textContent = PHASES[p];
+
+      const phaseGoal = document.createElement('span');
+      phaseGoal.className = 'phase-goal';
+      phaseGoal.textContent = formatLimitText(PHASE_LIMITS_MS[p]);
 
       const value = document.createElement('span');
       value.className = 'time';
@@ -70,8 +98,10 @@ export function renderTurns(onOldTurnToggle) {
         ms += performance.now() - state.startTime;
       }
       value.textContent = formatTime(ms);
+      value.classList.toggle('over-limit', ms >= PHASE_LIMITS_MS[p]);
 
-      row.appendChild(name);
+      row.appendChild(phaseName);
+      row.appendChild(phaseGoal);
       row.appendChild(value);
       phaseList.appendChild(row);
     }
@@ -140,12 +170,16 @@ export function updateLiveTimes(now = performance.now()) {
 
   const totalEl = dom.turnsContainerEl.querySelector(`[data-turn-total="${state.currentTurn}"]`);
   if (totalEl) {
-    totalEl.textContent = formatTime(getTurnTotal(state.currentTurn) + liveDelta);
+    const liveTurnMs = getTurnTotal(state.currentTurn) + liveDelta;
+    totalEl.textContent = formatTime(liveTurnMs);
+    totalEl.classList.toggle('over-limit', liveTurnMs >= TURN_LIMIT_MS);
   }
 
   const phaseEl = dom.turnsContainerEl.querySelector(`[data-phase-time="${state.currentTurn}-${state.currentPhase}"]`);
   if (phaseEl) {
-    phaseEl.textContent = formatTime(state.turns[state.currentTurn].phases[state.currentPhase] + liveDelta);
+    const livePhaseMs = state.turns[state.currentTurn].phases[state.currentPhase] + liveDelta;
+    phaseEl.textContent = formatTime(livePhaseMs);
+    phaseEl.classList.toggle('over-limit', livePhaseMs >= PHASE_LIMITS_MS[state.currentPhase]);
   }
 }
 
