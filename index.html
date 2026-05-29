@@ -198,6 +198,68 @@
       font-size: 0.82rem;
       text-align: center;
     }
+
+    .report {
+      margin-top: 16px;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      background: #0f172a;
+      padding: 14px;
+    }
+
+    .report[hidden] {
+      display: none;
+    }
+
+    .report h2 {
+      margin: 0 0 10px;
+      font-size: 1rem;
+      color: var(--muted);
+    }
+
+    .report-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+    }
+
+    .report-card {
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 10px;
+      background: rgba(15, 23, 42, 0.8);
+    }
+
+    .report-label {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 4px;
+      display: block;
+    }
+
+    .report-value {
+      font-size: 1.05rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .phase-avg-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 6px;
+    }
+
+    .phase-avg-item {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: center;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 7px 9px;
+    }
   </style>
 </head>
 <body>
@@ -222,6 +284,24 @@
     <section id="turnsContainer" class="turns"></section>
 
     <p class="hint">Tip: Press “Next Phase” to move through phases. Current turn stays expanded; earlier turns collapse automatically.</p>
+
+    <section id="reportSection" class="report" hidden>
+      <h2>End of Game Report</h2>
+      <div class="report-grid">
+        <div class="report-card">
+          <span class="report-label">Average Turn Time</span>
+          <div id="avgTurnTime" class="report-value">00:00</div>
+        </div>
+        <div class="report-card">
+          <span class="report-label">Turns Counted</span>
+          <div id="turnsCounted" class="report-value">0</div>
+        </div>
+      </div>
+      <div class="report-card" style="margin-top: 12px;">
+        <span class="report-label">Average Time by Phase</span>
+        <ul id="phaseAvgList" class="phase-avg-list"></ul>
+      </div>
+    </section>
   </main>
 
   <script>
@@ -232,7 +312,7 @@
       'Bidding',
       'Revival',
       'Shipping and Movement',
-      'Battle (Combat)',
+      'Battle',
       'Spice Collection',
       'Mentat'
     ];
@@ -245,6 +325,10 @@
     const endGameBtn = document.getElementById('endGameBtn');
     const resetBtn = document.getElementById('resetBtn');
     const gameTotalTimeEl = document.getElementById('gameTotalTime');
+    const reportSectionEl = document.getElementById('reportSection');
+    const avgTurnTimeEl = document.getElementById('avgTurnTime');
+    const turnsCountedEl = document.getElementById('turnsCounted');
+    const phaseAvgListEl = document.getElementById('phaseAvgList');
 
     let running = false;
     let startTime = 0;
@@ -365,9 +449,67 @@
       }
     }
 
+    function getPlayedTurnIndexes() {
+      const indexes = [];
+      for (let t = 0; t < MAX_TURNS; t += 1) {
+        if (getTurnTotal(t) > 0) {
+          indexes.push(t);
+        }
+      }
+      return indexes;
+    }
+
+    function renderReport() {
+      if (!gameEnded) {
+        reportSectionEl.hidden = true;
+        return;
+      }
+
+      const playedTurnIndexes = getPlayedTurnIndexes();
+      const turnsCount = playedTurnIndexes.length;
+
+      if (turnsCount === 0) {
+        reportSectionEl.hidden = false;
+        avgTurnTimeEl.textContent = '00:00';
+        turnsCountedEl.textContent = '0';
+        phaseAvgListEl.innerHTML = '<li class="phase-avg-item"><span>No timed turns were recorded.</span><span>00:00</span></li>';
+        return;
+      }
+
+      const totalAcrossTurns = playedTurnIndexes.reduce((sum, turnIndex) => sum + getTurnTotal(turnIndex), 0);
+      const avgTurnMs = totalAcrossTurns / turnsCount;
+
+      avgTurnTimeEl.textContent = formatTime(avgTurnMs);
+      turnsCountedEl.textContent = String(turnsCount);
+
+      phaseAvgListEl.innerHTML = '';
+
+      for (let p = 0; p < PHASES.length; p += 1) {
+        const phaseTotalMs = playedTurnIndexes.reduce((sum, turnIndex) => sum + turns[turnIndex].phases[p], 0);
+        const phaseAvgMs = phaseTotalMs / turnsCount;
+
+        const item = document.createElement('li');
+        item.className = 'phase-avg-item';
+
+        const label = document.createElement('span');
+        label.textContent = PHASES[p];
+
+        const value = document.createElement('span');
+        value.className = 'time';
+        value.textContent = formatTime(phaseAvgMs);
+
+        item.appendChild(label);
+        item.appendChild(value);
+        phaseAvgListEl.appendChild(item);
+      }
+
+      reportSectionEl.hidden = false;
+    }
+
     function renderStatus() {
       renderTurns();
       gameTotalTimeEl.textContent = formatTime(getGameTotalMs());
+      renderReport();
 
       const atLastPosition = currentTurn === MAX_TURNS - 1 && currentPhase === PHASES.length - 1;
       nextPhaseBtn.disabled = atLastPosition || gameEnded;
