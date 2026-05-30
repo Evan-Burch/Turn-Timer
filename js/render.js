@@ -3,6 +3,7 @@ import { dom } from './dom.js';
 import {
   state,
   formatTime,
+  formatGameTotalTime,
   getTurnTotal,
   getGameTotalMs,
   getPlayedTurnIndexes
@@ -159,7 +160,7 @@ export function renderReport() {
 }
 
 export function renderGameTotal(now = performance.now()) {
-  dom.gameTotalTimeEl.textContent = formatTime(getGameTotalMs(now));
+  dom.gameTotalTimeEl.textContent = formatGameTotalTime(getGameTotalMs(now));
 }
 
 export function updateLiveTimes(now = performance.now()) {
